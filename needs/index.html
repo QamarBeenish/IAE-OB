@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Needs Self-Check</title>
+<style>
+:root{
+  --bg:#FFFFFF; --surface:#FFFFFF; --soft:#F8E6EC; --line:#EBD3DC;
+  --ink:#2B1420; --muted:#6E5260; --accent:#B5446E; --accent-ink:#FFFFFF; --deep:#4A1A30;
+  --low:#E07A5F; --mid:#E8A33D; --high:#3E9B7A;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1A0F14; --surface:#24161D; --soft:#33202A; --line:#4A2E3B;
+    --ink:#F6E9EE; --muted:#C9AEBB; --accent:#E07A9F; --accent-ink:#1A0F14; --deep:#F8E6EC;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1A0F14; --surface:#24161D; --soft:#33202A; --line:#4A2E3B;
+  --ink:#F6E9EE; --muted:#C9AEBB; --accent:#E07A9F; --accent-ink:#1A0F14; --deep:#F8E6EC;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:Calibri,Carlito,"Segoe UI",system-ui,-apple-system,sans-serif;font-size:17px;line-height:1.45}
+.wrap{max-width:680px;margin:0 auto;
+  padding:max(20px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(40px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+header{padding:8px 0 4px}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font-family:Cambria,Georgia,serif;font-size:1.9rem;margin:.2em 0 .3em;color:var(--deep)}
+.lead{color:var(--muted);margin:0 0 14px}
+.scale{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 18px;padding:0;list-style:none;font-size:.85rem;color:var(--muted)}
+.scale li{background:var(--soft);border-radius:999px;padding:3px 10px}
+.progress{position:sticky;top:0;z-index:2;background:var(--bg);padding:10px 0 12px}
+.bar{height:8px;border-radius:999px;background:var(--soft);overflow:hidden}
+.bar span{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.count{font-size:.85rem;color:var(--muted);margin-top:6px}
+fieldset{border:1px solid var(--line);border-radius:14px;margin:0 0 12px;padding:14px 14px 12px;background:var(--surface)}
+fieldset.done{border-color:var(--accent)}
+fieldset.missing{border-color:var(--low);box-shadow:0 0 0 2px color-mix(in srgb,var(--low) 30%,transparent)}
+legend{display:contents}
+.q{display:flex;gap:10px;font-weight:600;margin-bottom:10px}
+.q b{flex:none;width:28px;height:28px;border-radius:50%;background:var(--soft);color:var(--accent);display:grid;place-items:center;font-size:.85rem}
+.opts{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.opts label{position:relative;cursor:pointer}
+.opts input{position:absolute;opacity:0;inset:0;margin:0}
+.opts span{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:58px;
+  border:1px solid var(--line);border-radius:10px;font-size:.72rem;text-align:center;color:var(--muted);padding:4px 2px;transition:.15s}
+.opts span strong{font-size:1.05rem;color:var(--ink)}
+.opts input:checked + span{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.opts input:checked + span strong{color:var(--accent-ink)}
+.opts input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:14px 22px;cursor:pointer}
+.primary{width:100%;background:var(--accent);color:var(--accent-ink);font-size:1.05rem;margin-top:6px}
+.ghost{background:var(--surface);color:var(--deep);border:1px solid var(--line)}
+.msg{color:var(--low);font-size:.9rem;min-height:1.3em;margin:8px 0 0;text-align:center}
+#result{display:none;border-radius:18px;background:var(--soft);padding:22px 18px;margin:8px 0 18px;text-align:center}
+#result.show{display:block}
+.score{font-family:Cambria,Georgia,serif;font-size:3.4rem;font-weight:700;color:var(--deep);line-height:1}
+.of{color:var(--muted);font-size:1rem}
+.meter{position:relative;height:12px;border-radius:999px;margin:18px 0 6px;
+  background:linear-gradient(90deg,var(--low) 0 33.3%,var(--mid) 33.3% 68.3%,var(--high) 68.3% 100%)}
+.meter i{position:absolute;top:-5px;width:22px;height:22px;border-radius:50%;background:var(--surface);border:3px solid var(--deep);transform:translateX(-50%);transition:left .4s}
+.ticks{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)}
+.band{display:inline-block;margin:14px 0 6px;padding:4px 14px;border-radius:999px;color:#fff;font-weight:700}
+.comment{margin:6px 0 16px;text-align:left}
+footer{font-size:.78rem;color:var(--muted);margin-top:20px;border-top:1px solid var(--line);padding-top:12px}
+@media (max-width:380px){.opts span{font-size:.64rem}}
+.need{margin:14px 0;text-align:left}
+.need .row{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;color:var(--deep)}
+.need .row>span:last-child{white-space:nowrap;font-family:Cambria,Georgia,serif;font-size:1.3rem}
+.track{height:14px;border-radius:999px;background:var(--surface);border:1px solid var(--line);overflow:hidden;margin-top:6px}
+.track i{display:block;height:100%;width:0;border-radius:999px;transition:width .5s}
+.top{outline:3px solid var(--deep);outline-offset:3px;border-radius:12px;padding:8px 10px;background:var(--surface)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;background:var(--deep);color:var(--bg);border-radius:999px;padding:1px 8px;margin-left:8px;vertical-align:middle}
+.tip{margin:8px 0 0;color:var(--muted);font-size:.95rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">IAE Bordeaux · Organisational Behaviour · Session 3</div>
+    <h1>Which need drives you at work?</h1>
+    <p class="lead">Tap how true each statement is for you. There are no right or wrong answers, and nothing you choose is saved or sent anywhere. It takes about four minutes.</p>
+  </header>
+
+  <div class="progress"><div class="bar"><span id="bar"></span></div><div class="count" id="count">0 of 12 answered</div></div>
+
+  <section id="result" aria-live="polite">
+    <div class="eyebrow">Your three needs</div>
+    <div id="needs"></div>
+    <p class="comment" id="comment"></p>
+    <button class="ghost" id="again" type="button">Answer again</button>
+  </section>
+
+  <form id="quiz" novalidate></form>
+  <p class="msg" id="msg"></p>
+
+  <footer>This is a quick self-check, not a validated psychological test.</footer>
+</div>
+
+<script>
+const needs = {
+  ach: {name:'Need for achievement', short:'nAch', color:'#E8A33D', tip:'Motivated by challenging tasks with clear objectives and feedback on results.'},
+  pow: {name:'Need for power',       short:'nPow', color:'#F26B3A', tip:'Motivated by planning, influencing and having control over how work is done.'},
+  aff: {name:'Need for affiliation', short:'nAff', color:'#5AA0CF', tip:'Motivated by friendly relationships and working as part of a team.'}
+};
+const items = [
+  ['ach', 'I like tasks where I can see exactly how well I did.'],
+  ['aff', 'I work best when I feel close to my colleagues.'],
+  ['pow', 'I enjoy being in charge of a project or a group.'],
+  ['ach', 'I set demanding goals for myself and work hard to reach them.'],
+  ['aff', 'I care a lot about being liked by the people I work with.'],
+  ['pow', 'I like to influence other people’s decisions.'],
+  ['ach', 'I prefer challenging work to easy work, even if I might fail.'],
+  ['aff', 'I would rather work in a team than alone.'],
+  ['pow', 'I take the lead when a group has no direction.'],
+  ['ach', 'I feel restless when I know I could have done a task better.'],
+  ['aff', 'A friendly atmosphere at work matters more to me than a title or a bonus.'],
+  ['pow', 'Having authority over how things are done matters to me.']
+];
+const labels = ['Not like me','Slightly','Somewhat','Mostly','Very like me'];
+const form = document.getElementById('quiz');
+items.forEach(([, text], i) => {
+  const fs = document.createElement('fieldset');
+  fs.id = 'f' + i;
+  let opts = '';
+  labels.forEach((l, k) => { opts += `<label><input type="radio" name="q${i}" value="${k+1}"><span><strong>${k+1}</strong>${l}</span></label>`; });
+  fs.innerHTML = `<legend><div class="q"><b>${i+1}</b><div>${text}</div></div></legend><div class="opts">${opts}</div>`;
+  form.appendChild(fs);
+});
+const submit = document.createElement('button');
+submit.type = 'submit'; submit.className = 'primary'; submit.textContent = 'See my scores';
+form.appendChild(submit);
+
+const answered = () => items.map((_, i) => form.querySelector(`input[name="q${i}"]:checked`));
+function update(){
+  const n = answered().filter(Boolean).length;
+  document.getElementById('bar').style.width = (n / 12 * 100) + '%';
+  document.getElementById('count').textContent = `${n} of 12 answered`;
+}
+form.addEventListener('change', e => {
+  const fs = e.target.closest('fieldset');
+  fs.classList.add('done'); fs.classList.remove('missing');
+  document.getElementById('msg').textContent = '';
+  update();
+});
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  const a = answered();
+  const missing = a.map((x, i) => x ? -1 : i).filter(i => i >= 0);
+  if (missing.length){
+    missing.forEach(i => document.getElementById('f' + i).classList.add('missing'));
+    document.getElementById('msg').textContent = `Please answer ${missing.length === 1 ? 'statement ' + (missing[0]+1) : missing.length + ' more statements'}.`;
+    document.getElementById('f' + missing[0]).scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  const tot = {ach:0, pow:0, aff:0};
+  a.forEach((x, i) => { tot[items[i][0]] += +x.value; });
+  const max = Math.max(tot.ach, tot.pow, tot.aff);
+  const box = document.getElementById('needs'); box.innerHTML = '';
+  Object.keys(needs).forEach(k => {
+    const n = needs[k], top = tot[k] === max;
+    const d = document.createElement('div'); d.className = 'need' + (top ? ' top' : '');
+    d.innerHTML = `<div class="row"><span>${n.name} (${n.short})${top ? '<span class="tag">Highest</span>' : ''}</span><span>${tot[k]}<small style="font-size:.8rem;color:var(--muted)"> / 20</small></span></div>
+      <div class="track"><i style="background:${n.color}"></i></div>` + (top ? `<p class="tip">${n.tip}</p>` : '');
+    box.appendChild(d);
+    requestAnimationFrame(() => requestAnimationFrame(() => { d.querySelector('i').style.width = (tot[k] / 20 * 100) + '%'; }));
+  });
+  const tops = Object.keys(needs).filter(k => tot[k] === max);
+  document.getElementById('comment').textContent = tops.length > 1
+    ? 'Your highest scores are tied, so you are driven by more than one need. Be ready to say which one matters most to you.'
+    : 'Everyone has all three needs. The highest score shows which one you are most likely to be motivated by right now.';
+  const r = document.getElementById('result'); r.classList.add('show');
+  form.style.display = 'none';
+  window.scrollTo({top: r.offsetTop - 20, behavior: 'smooth'});
+});
+document.getElementById('again').addEventListener('click', () => {
+  form.reset();
+  form.querySelectorAll('fieldset').forEach(f => f.classList.remove('done','missing'));
+  document.getElementById('result').classList.remove('show');
+  form.style.display = '';
+  update();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+});
+</script>
+</body>
+</html>
